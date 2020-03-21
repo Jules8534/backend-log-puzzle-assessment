@@ -21,6 +21,12 @@ import re
 import sys
 import urllib
 import argparse
+if sys.version_info[0] >= 3:
+    from urllib.request import urlretrieve
+else:
+    from urllib import urlretrieve
+
+__authur__ = "Julita Marshall with Earth"
 
 
 def read_urls(filename):
@@ -29,7 +35,43 @@ def read_urls(filename):
     Screens out duplicate urls and returns the urls sorted into
     increasing order."""
     # +++your code here+++
-    pass
+    # puzzle = []
+    # urls = []
+    with open(filename) as apache_list:
+        url_list =apache_list.read().split("\n")
+    host_list = [extract_host_name(url)for url in url_list if "GET" in url]
+    host_list = filter(lambda url: "puzzle" in url,
+                        host_list)
+    host_list = list(set(host_list))
+
+    second_word = re.findall(r"puzzle\/.-....-(....).jpg", host_list[0])
+    host_dict = {}
+    if second_word:
+        for url in host_list:
+            sorted_word = re.findall(r'puzzle\/.-....-(....).jpg', url)
+            host_dict[url] = sorted_word
+    else:
+        for url in host_list:
+            sorted_word = re.findall(r'puzzle\/.-(....).jpg', url)
+            host_dict[url] = sorted_word
+    sorted_host_list = sorted(host_dict.items(), key=lambda x: x[1])
+    sorted_host_list = [host_tuple[0] for host_tuple in sorted_host_list]
+    completed_url_list = add_prefixes(filename, sorted_host_list)
+
+    return completed_url_list
+        
+        
+def extract_host_name(url):
+    """returns the host name from a given url"""
+    host = re.findall(r'GET (\S+) HTTP', url)
+    return host[0]
+
+
+def add_prefixes(filename, host_list):
+    """adds server prefixes to the urls in host_list"""
+    server_name = "https://" + re.findall(r'\S+\_(\S+)', filename)[0]
+    completed_url_list = [server_name + host for host in host_list]
+    return completed_url_list
 
 
 def download_images(img_urls, dest_dir):
@@ -40,9 +82,26 @@ def download_images(img_urls, dest_dir):
     with an img tag to show each local image file.
     Creates the directory if necessary.
     """
-    # +++your code here+++
-    pass
 
+    if not os.path.exists(str(dest_dir)):
+        os.mkdir(dest_dir)
+    #print('Retreiving...')
+    index_html = "<html> \n <body> \n"
+    for url in img_urls:
+        img_name = "img" + str(img_urls.index(url))
+        img_dest = dest_dir + img_name
+        index_html += "<img src='" + img_name + "' />"
+        print("Retreiving and saving " + url)
+        urlretrieve(url, img_dest)
+    index_html  += "\n </body> \n </html>"
+    with open(str(dest_dir) + "/index.html", 'w') as file:
+        file.write(index_html)
+        # for index, url in enumerate(img_urls):
+        #     urllib.urlretrieve(url, filename=dest_dir + 
+        #     '/img' + str(index) + ".jpg")
+        #     file.write("<img src='img" + str(index) + ".jpg' >")
+        # file.write("</body></html>")
+           
 
 def create_parser():
     """Create an argument parser object"""
