@@ -95,8 +95,8 @@ def download_images(img_urls, dest_dir):
         print("Retreiving and saving " + url)
         urlretrieve(url, img_dest)
     index_html += "\n </body> \n </html>"
-    with open(str(dest_dir) + "/index.html", 'w') as file:
-        file.write(index_html)
+    with open(dest_dir + "/index.html", "w") as index_html_file:
+        index_html_file.write(index_html)
         # for index, url in enumerate(img_urls):
         #     urllib.urlretrieve(url, filename=dest_dir +
         #     '/img' + str(index) + ".jpg")
@@ -107,9 +107,9 @@ def download_images(img_urls, dest_dir):
 def create_parser():
     """Create an argument parser object"""
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-d', '--todir',
-        help='destination directory for downloaded images')
+    parser.add_argument('-d',
+                        '--todir',
+                        help='destination directory for downloaded images')
     parser.add_argument('logfile', help='apache logfile to extract urls from')
 
     return parser
